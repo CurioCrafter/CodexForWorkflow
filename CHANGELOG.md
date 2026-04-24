@@ -2,7 +2,7 @@
 
 ## 0.1.0
 
-- Initial source-available release.
+- Initial MIT-licensed release.
 - Added Codex-authenticated app-server integration.
 - Added isolated Playwright browser automation with screenshot feedback.
 - Added observe-only screen sharing for screens and windows.

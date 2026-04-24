@@ -591,9 +591,9 @@ textarea:focus {
 
 .command-bar {
   display: grid;
-  grid-template-columns: minmax(260px, 1.1fr) minmax(220px, 1fr) 110px auto;
+  grid-template-columns: minmax(190px, 1.15fr) minmax(150px, 0.9fr) minmax(76px, 0.42fr) 86px;
   align-items: end;
-  gap: 10px;
+  gap: 8px;
   padding: 12px;
   border: 1px solid rgba(32, 31, 28, 0.12);
   border-radius: 8px;
@@ -608,6 +608,13 @@ textarea:focus {
 .quick-command input,
 .model-input input {
   height: 38px;
+}
+
+.command-bar .primary {
+  width: 100%;
+  min-width: 0;
+  padding: 0 10px;
+  white-space: nowrap;
 }
 
 .plan-board {
@@ -842,6 +849,6 @@ textarea:focus {
   }
 
   .command-bar {
-    grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.8fr) 96px auto;
+    grid-template-columns: minmax(170px, 1.1fr) minmax(130px, 0.85fr) minmax(68px, 0.4fr) 80px;
   }
 }

@@ -1,16 +1,16 @@
 {
-  "name": "codex-on-computer",
+  "name": "codex-for-workflow",
   "version": "0.1.0",
-  "productName": "CodexOnComputer",
-  "description": "Source-available desktop command center for Codex-guided multi-screen workflows.",
+  "productName": "CodexForWorkflow",
+  "description": "Desktop command center for Codex-guided multi-screen workflows.",
   "author": "Andrew Rainsberger",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/andrewrainsberger/CodexOnComputer.git"
+    "url": "https://github.com/CurioCrafter/CodexForWorkflow.git"
   },
-  "homepage": "https://github.com/andrewrainsberger/CodexOnComputer",
+  "homepage": "https://github.com/CurioCrafter/CodexForWorkflow",
   "main": "dist/main/main/main.js",
   "scripts": {
     "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
@@ -49,8 +49,8 @@
     "wait-on": "^9.0.3"
   },
   "build": {
-    "appId": "com.andrewrainsberger.codexoncomputer",
-    "productName": "CodexOnComputer",
+    "appId": "com.curiocrafter.codexforworkflow",
+    "productName": "CodexForWorkflow",
     "directories": {
       "output": "release"
     },

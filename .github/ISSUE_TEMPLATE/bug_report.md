@@ -26,7 +26,7 @@ assignees: ""
 - Windows version:
 - Node.js version:
 - Codex CLI version:
-- CodexOnComputer version/commit:
+- CodexForWorkflow version/commit:
 
 ## Logs
 

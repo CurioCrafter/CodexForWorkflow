@@ -18,6 +18,6 @@ Report security concerns directly to the repository owner. Include:
 
 ## Safety Boundaries
 
-CodexOnComputer is designed so live desktop sharing is observe-only. Automated
+CodexForWorkflow is designed so live desktop sharing is observe-only. Automated
 input is limited to the isolated Playwright browser profile and remains subject
 to approval gates.

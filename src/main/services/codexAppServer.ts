@@ -110,7 +110,7 @@ export class CodexAppServerClient extends EventEmitter {
     await this.request("initialize", {
       clientInfo: {
         name: "codex_browser_pilot",
-        title: "Codex Browser Pilot",
+        title: "CodexForWorkflow",
         version: "0.1.0"
       }
     });

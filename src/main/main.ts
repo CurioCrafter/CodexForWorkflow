@@ -31,7 +31,7 @@ async function createWindow(): Promise<void> {
     height: 940,
     minWidth: 1100,
     minHeight: 720,
-    title: "CodexOnComputer",
+    title: "CodexForWorkflow",
     backgroundColor: "#f6f4ef",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),

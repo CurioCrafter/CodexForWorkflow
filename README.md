@@ -1,8 +1,18 @@
-# CodexOnComputer
+# CodexForWorkflow
 
-CodexOnComputer is a Windows desktop command center for Codex-guided work across screens. It lets a user share screens or windows for observe-only guidance, run approved automation inside an isolated browser, preview mouse intent before action, and keep a visible plan board while working.
+CodexForWorkflow is a Windows desktop command center for Codex-guided work across multiple screens. It helps you share screens or windows for observe-only guidance, automate an isolated browser with approvals, preview mouse intent before action, and keep a visible plan while working.
 
 This project is independently built by Andrew Rainsberger. It is not an official OpenAI product and is not affiliated with or endorsed by OpenAI.
+
+## Screenshots
+
+### Pro Command Center
+
+![CodexForWorkflow command center](docs/screenshots/command-center.png)
+
+### Safety And Approval Flow
+
+![CodexForWorkflow approval flow](docs/screenshots/approval-flow.png)
 
 ## What It Does
 
@@ -12,13 +22,14 @@ This project is independently built by Andrew Rainsberger. It is not an official
 - Isolated Browser mode: Playwright Chromium automation with human approval for risky actions.
 - Mouse Plan: visible target overlays that show where Codex wants the next action to happen.
 - Plan Board: Codex-visible observe, decide, act/guide, and verify workflow steps.
+- Workflow presets: guide a screen, automate a browser, compare research windows, or debug with an assistant.
 - Safety controls: pause, resume, stop, approvals, blocked domains, and credential/download gates.
 
 ## License
 
-CodexOnComputer is source-available and free to use, but it is not open source.
+CodexForWorkflow is open source under the [MIT License](LICENSE).
 
-You may download, run, and use unmodified copies for free. You may not claim ownership, relicense it, sell it, publish modified versions, remove ownership notices, or use the code to create a competing derivative. See [LICENSE](LICENSE) for the full terms.
+You can use, copy, modify, publish, distribute, sublicense, and sell copies of the software, as long as the copyright and license notice stay with the software.
 
 ## Requirements
 
@@ -62,19 +73,13 @@ Build output is written to `release/`.
 
 ## Safety Model
 
-CodexOnComputer intentionally separates observation from control:
+CodexForWorkflow intentionally separates observation from control:
 
 - Live desktop screen sharing is observe-only.
 - Automated clicking/typing is only allowed inside the isolated Playwright browser.
 - Sensitive browser flows require approval.
 - The local MCP bridge is loopback-only and uses a per-session token.
 
-## Publishing
+## Repository
 
-This repository is intended to be published as:
-
-```text
-https://github.com/andrewrainsberger/CodexOnComputer
-```
-
-If your GitHub username differs, update `package.json` before pushing.
+https://github.com/CurioCrafter/CodexForWorkflow

@@ -36,6 +36,10 @@ import type {
   TimelineEvent,
   WorkflowPresetId
 } from "../shared/types";
+import { createDemoState } from "./demoState";
+
+const demoVariant = new URLSearchParams(window.location.search).get("demo");
+const isDemoMode = demoVariant !== null;
 
 const emptyState: AppState = {
   authStatus: "Not checked",
@@ -88,7 +92,9 @@ const presets: Array<{
 ];
 
 export default function App() {
-  const [state, setState] = useState<AppState>(emptyState);
+  const [state, setState] = useState<AppState>(() =>
+    isDemoMode ? createDemoState(demoVariant) : emptyState
+  );
   const [task, setTask] = useState(presets[0].task);
   const [quickPrompt, setQuickPrompt] = useState("What do you see, and what should I do next?");
   const [model, setModel] = useState("gpt-5.5");
@@ -104,11 +110,17 @@ export default function App() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (isDemoMode) {
+      return;
+    }
     window.browserPilot.getState().then(setState);
     return window.browserPilot.onState(setState);
   }, []);
 
   useEffect(() => {
+    if (isDemoMode) {
+      return;
+    }
     if (environment === "screen-share" && state.screenWorkspace.sources.length === 0) {
       window.browserPilot.listScreenSources().catch(() => undefined);
     }
@@ -202,7 +214,7 @@ export default function App() {
             <Shield size={18} />
           </div>
           <div>
-            <h1>Codex Command Center</h1>
+            <h1>CodexForWorkflow</h1>
             <p>Multi-screen guidance, browser automation, and visible intent.</p>
           </div>
         </header>
