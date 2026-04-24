@@ -1,0 +1,84 @@
+{
+  "name": "codex-on-computer",
+  "version": "0.1.0",
+  "productName": "CodexOnComputer",
+  "description": "Source-available desktop command center for Codex-guided multi-screen workflows.",
+  "author": "Andrew Rainsberger",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrewrainsberger/CodexOnComputer.git"
+  },
+  "homepage": "https://github.com/andrewrainsberger/CodexOnComputer",
+  "main": "dist/main/main/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
+    "dev:renderer": "vite --host 127.0.0.1",
+    "dev:electron": "wait-on tcp:5173 && npm run build:main && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "vite build",
+    "start": "electron .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prepare:browsers": "playwright install chromium",
+    "package": "npm run build && electron-builder --dir --publish never",
+    "package:win": "npm run build && electron-builder --win nsis portable --publish never"
+  },
+  "dependencies": {
+    "framer-motion": "^12.23.26",
+    "lucide-react": "^0.561.0",
+    "playwright": "^1.57.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.8.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7",
+    "vitest": "^4.0.16",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.andrewrainsberger.codexoncomputer",
+    "productName": "CodexOnComputer",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "README.md",
+      "LICENSE",
+      "NOTICE"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/playwright/**",
+      "node_modules/playwright-core/**"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-${version}-setup-${os}-${arch}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable-${os}-${arch}.${ext}"
+    }
+  }
+}
