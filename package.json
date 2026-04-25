@@ -1,6 +1,6 @@
 {
   "name": "codex-for-workflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "productName": "CodexForWorkflow",
   "description": "Desktop command center for Codex-guided multi-screen workflows.",
   "author": "Andrew Rainsberger",

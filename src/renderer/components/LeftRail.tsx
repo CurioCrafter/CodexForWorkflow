@@ -1,4 +1,4 @@
-import { Eye, KeyRound, Layers3, LogIn, Monitor, MousePointer2, Pin, PinOff, RefreshCw, Shield, Target } from "lucide-react";
+import { Check, Eye, KeyRound, Layers3, LogIn, Monitor, MousePointer2, Pin, PinOff, RefreshCw, Shield, Target } from "lucide-react";
 import type { ScreenSource, TaskEnvironment, WorkflowPresetId } from "../../shared/types";
 import type { WorkflowPreset } from "../lib/appModel";
 
@@ -44,6 +44,7 @@ export function LeftRail({
   onFocusSource
 }: LeftRailProps) {
   const authReady = authStatus.toLowerCase().includes("logged in");
+  const sourceReady = sources.length > 0 && Boolean(screenSourceId || focusedSourceId);
 
   return (
     <aside className="left-rail">
@@ -56,6 +57,23 @@ export function LeftRail({
           <p>Multi-screen guidance, browser automation, and visible intent.</p>
         </div>
       </header>
+
+      <section className="rail-section compact">
+        <div className="section-title">
+          <Layers3 size={15} />
+          <span>Setup checklist</span>
+        </div>
+        <div className="setup-list">
+          <SetupItem done={authReady} label="Codex auth" detail={authReady ? "Ready" : "Check or login"} />
+          <SetupItem done label="Mode" detail={environment === "screen-share" ? "Guidance only" : "Browser automation"} />
+          <SetupItem
+            done={sourceReady || environment === "isolated-browser"}
+            label="Source"
+            detail={environment === "isolated-browser" ? "Not needed for browser mode" : sourceReady ? "Screen/window selected" : "Refresh sources"}
+          />
+          <SetupItem done label="Task" detail="Prompt lives in the command bar" />
+        </div>
+      </section>
 
       <section className="rail-section compact">
         <div className="section-title">
@@ -153,6 +171,18 @@ export function LeftRail({
         </div>
       </section>
     </aside>
+  );
+}
+
+function SetupItem({ done, label, detail }: { done: boolean; label: string; detail: string }) {
+  return (
+    <div className={`setup-item ${done ? "done" : ""}`}>
+      <span>{done ? <Check size={13} /> : null}</span>
+      <div>
+        <strong>{label}</strong>
+        <small>{detail}</small>
+      </div>
+    </div>
   );
 }
 

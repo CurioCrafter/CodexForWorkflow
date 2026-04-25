@@ -15,11 +15,12 @@ flowchart LR
 
 ## Renderer
 
-The renderer is a command-center UI:
+The renderer is a guided command-center UI:
 
-- left rail for auth, workflows, and sources;
-- center work zone for the live work surface, secondary sources, and command bar;
-- right rail for plan board, mouse plan, approvals, and timeline.
+- left rail for setup: auth, mode, sources, and workflow presets;
+- center work zone for the current step banner, live work surface, secondary sources, and Ask Codex bar;
+- right rail for Guide, Approvals, Activity, and Details tabs;
+- Guide tab for the active Plan Board step, Mouse Plan controls, and step-level actions.
 
 Deterministic demo state powers README screenshots without using real desktop content.
 
@@ -33,6 +34,12 @@ The Electron main process owns privileged work:
 - screen source capture;
 - policy and approval gating;
 - loopback bridge lifecycle.
+
+Renderer follow-ups use local IPC only:
+
+- `task:send-command` sends a follow-up prompt into the active Codex thread.
+- `task:observe-current` refreshes the isolated browser or pinned screen-share observations.
+- `plan-step:update` records local user progress and advances the next pending step when appropriate.
 
 ## Tool Boundary
 

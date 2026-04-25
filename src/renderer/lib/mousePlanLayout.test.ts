@@ -33,4 +33,15 @@ describe("getMousePlanOverlayLayout", () => {
     expect(layout.className).toContain("high");
     expect(layout.className).toContain("intent-type");
   });
+
+  it.each([
+    ["left", { x: 1, y: 400 }, "edge-left"],
+    ["right", { x: 999, y: 400 }, "edge-right"],
+    ["top", { x: 500, y: 1 }, "edge-top"],
+    ["bottom", { x: 500, y: 799 }, "edge-bottom"]
+  ])("clamps labels near the %s edge", (_label, coords, className) => {
+    const layout = getMousePlanOverlayLayout({ ...basePlan, ...coords });
+
+    expect(layout.className).toContain(className);
+  });
 });

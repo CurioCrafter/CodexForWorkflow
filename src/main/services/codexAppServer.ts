@@ -130,6 +130,20 @@ export class CodexAppServerClient extends EventEmitter {
     return selection;
   }
 
+  async sendCommand(prompt: string): Promise<void> {
+    if (!this.proc || !this.threadId) {
+      throw new Error("Codex session is not running.");
+    }
+    const trimmed = prompt.trim();
+    if (!trimmed) {
+      throw new Error("Follow-up command is required.");
+    }
+    await this.request("turn/start", {
+      threadId: this.threadId,
+      input: [{ type: "text", text: trimmed }]
+    });
+  }
+
   async stop(): Promise<void> {
     if (!this.proc) {
       return;
@@ -241,7 +255,9 @@ export function buildCodexTaskPrompt(
 ): string {
   const sharedPlanInstructions = [
     "Maintain a concise Plan Board using plan_board_set and plan_step_update.",
+    "Keep exactly one Plan Board step active whenever possible.",
     "When a visual target matters, propose a Mouse Plan with mouse_plan_propose before acting or guiding.",
+    "If the user says they performed a guided action, observe again and verify the result before moving on.",
     "Use low-risk, reversible steps and verify after each meaningful change."
   ];
 

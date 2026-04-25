@@ -93,6 +93,8 @@ h1 {
 .right-rail {
   grid-area: right;
   border-left: 1px solid var(--border);
+  gap: 12px;
+  overflow: hidden;
 }
 
 .brand-block {
@@ -177,6 +179,55 @@ h1 {
   font-size: 12px;
   line-height: 1.38;
   white-space: pre-wrap;
+}
+
+.setup-list {
+  display: grid;
+  gap: 7px;
+}
+
+.setup-item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 253, 248, 0.62);
+}
+
+.setup-item > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  color: #fffdf8;
+  background: rgba(32, 31, 28, 0.16);
+}
+
+.setup-item.done > span {
+  background: var(--primary-2);
+}
+
+.setup-item div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.setup-item strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.setup-item small {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 label {
@@ -404,11 +455,57 @@ textarea:focus {
 .work-zone {
   grid-area: work;
   display: grid;
-  grid-template-rows: 58px minmax(380px, 1fr) 104px auto auto;
+  grid-template-rows: 58px auto minmax(320px, 1fr) 104px auto auto;
   min-width: 0;
   min-height: 0;
   gap: 12px;
   padding: 16px;
+}
+
+.current-step-banner {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 1px solid rgba(79, 119, 107, 0.24);
+  border-radius: var(--radius-md);
+  background: rgba(241, 248, 244, 0.9);
+}
+
+.current-step-banner.medium {
+  border-color: rgba(196, 122, 54, 0.28);
+  background: rgba(255, 248, 235, 0.9);
+}
+
+.current-step-banner.high {
+  border-color: rgba(178, 74, 66, 0.28);
+  background: rgba(255, 243, 241, 0.92);
+}
+
+.current-step-banner.empty {
+  color: var(--ink-muted);
+  background: rgba(255, 253, 248, 0.76);
+}
+
+.current-step-banner span {
+  color: var(--ink-muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.current-step-banner strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.current-step-banner p {
+  margin-top: 3px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.34;
 }
 
 .topbar {
@@ -708,6 +805,10 @@ textarea:focus {
   background: var(--surface-panel);
 }
 
+.guided-command-bar {
+  grid-template-columns: minmax(220px, 1.1fr) minmax(180px, 1fr) minmax(76px, 0.42fr) 86px;
+}
+
 .command-bar textarea {
   min-height: 58px;
   max-height: 58px;
@@ -725,6 +826,24 @@ textarea:focus {
   white-space: nowrap;
 }
 
+.quick-chip-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.quick-chip {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid rgba(32, 31, 28, 0.12);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: rgba(255, 253, 248, 0.78);
+  font-size: 11px;
+  font-weight: 850;
+}
+
 .helper-text {
   margin: -4px 4px 0;
   color: var(--ink-muted);
@@ -734,7 +853,8 @@ textarea:focus {
 
 .plan-board {
   flex: 0 0 auto;
-  max-height: 31%;
+  min-height: 0;
+  max-height: none;
 }
 
 .plan-list {
@@ -745,13 +865,34 @@ textarea:focus {
   overflow: auto;
 }
 
+.empty-plan-flow {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px dashed rgba(79, 119, 107, 0.28);
+  border-radius: var(--radius-md);
+  background: rgba(241, 248, 244, 0.62);
+}
+
+.empty-plan-flow strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.empty-plan-flow p {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.38;
+}
+
 .plan-step {
   display: grid;
   gap: 6px;
-  padding: 9px 10px;
+  padding: 0;
   border-left: 3px solid #9b9287;
   border-radius: 0 7px 7px 0;
   background: rgba(255, 253, 248, 0.8);
+  overflow: hidden;
 }
 
 .plan-step.active {
@@ -768,21 +909,33 @@ textarea:focus {
   border-left-color: #c47a36;
 }
 
-.plan-step div {
+.plan-step-toggle {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 10px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.plan-step-toggle div {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.plan-step span {
+.plan-step span,
+.plan-step-toggle span {
   color: #71695f;
   font-size: 10px;
   font-weight: 850;
   text-transform: uppercase;
 }
 
-.plan-step strong {
+.plan-step strong,
+.plan-step-toggle strong {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -796,9 +949,122 @@ textarea:focus {
   line-height: 1.32;
 }
 
-.plan-step footer {
+.plan-step footer,
+.plan-step-toggle footer {
   display: flex;
   gap: 8px;
+}
+
+.plan-step-detail {
+  display: grid;
+  gap: 8px;
+  padding: 0 10px 10px;
+}
+
+.plan-step-detail .guide-action-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.active-guide-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(79, 119, 107, 0.28);
+  border-radius: var(--radius-md);
+  background: var(--surface-green);
+}
+
+.active-guide-card.medium {
+  border-color: rgba(196, 122, 54, 0.3);
+  background: var(--surface-warning);
+}
+
+.active-guide-card.high {
+  border-color: rgba(178, 74, 66, 0.32);
+  background: var(--surface-danger);
+}
+
+.active-guide-card.empty-guide {
+  border-style: dashed;
+  background: rgba(255, 253, 248, 0.68);
+}
+
+.active-guide-card > strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.active-guide-card p,
+.step-next-action {
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.38;
+}
+
+.step-next-action {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 253, 248, 0.72);
+}
+
+.step-insight {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.step-insight span {
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: rgba(32, 31, 28, 0.07);
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.guide-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.guide-action-grid .secondary {
+  min-height: 32px;
+}
+
+.guide-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.guide-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 253, 248, 0.66);
+}
+
+.guide-tabs button {
+  min-height: 30px;
+  border-radius: 6px;
+  color: var(--ink-muted);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.guide-tabs button.active {
+  color: #fffdf8;
+  background: var(--primary);
 }
 
 .mouse-plan-panel {
@@ -850,9 +1116,10 @@ textarea:focus {
   text-transform: uppercase;
 }
 
-.approvals {
-  flex: 0 0 auto;
-  max-height: 34%;
+.approvals,
+.details-panel {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -1052,13 +1319,20 @@ textarea:focus {
   }
 
   .right-rail {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
+    overflow: visible;
     border-top: 1px solid var(--border);
     border-left: 0;
   }
 
+  .guide-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+    flex: none;
+    padding-right: 0;
+  }
+
+  .guide-panel .plan-board,
   .right-rail .timeline-section {
     grid-column: 1 / -1;
   }
@@ -1108,6 +1382,10 @@ textarea:focus {
   }
 
   .right-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-panel {
     grid-template-columns: 1fr;
   }
 }

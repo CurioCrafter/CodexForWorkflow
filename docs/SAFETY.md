@@ -8,6 +8,7 @@ CodexForWorkflow is designed around clear separation between observation and con
 - Codex can inspect screenshots and propose guidance.
 - The app does not synthesize desktop mouse or keyboard input.
 - Mouse Plan overlays are guidance for the user, not live desktop automation.
+- `I did this` records the user's manual action and asks Codex to verify with another observation; it does not click or type on the desktop.
 
 ## Isolated Browser Mode
 

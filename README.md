@@ -15,7 +15,7 @@ This project is independently built by Andrew Rainsberger. It is not an official
 
 ## What It Is
 
-CodexForWorkflow gives Codex a controlled place to help you work across screens. It can observe selected screens or windows, narrate what it sees, maintain a visible plan, propose mouse intent, and automate an isolated Playwright browser only when the safety policy allows it.
+CodexForWorkflow gives Codex a controlled place to help you work across screens. It opens into a guided workspace: connect Codex auth, choose a mode/source, describe the task, then follow the current step, Mouse Plan, approval queue, and verification loop.
 
 ## What It Is Not
 
@@ -30,10 +30,13 @@ CodexForWorkflow gives Codex a controlled place to help you work across screens.
 - Live Work Surface: a primary screen/browser canvas with secondary context strips.
 - Screen Share mode: observe-only guidance for the live desktop.
 - Isolated Browser mode: Playwright Chromium automation with approval gates.
-- Mouse Plan: visible target overlays before user-guided or browser-automated actions.
-- Plan Board: Codex-visible observe, decide, act/guide, and verify workflow steps.
+- Mouse Plan: visible target overlays with manual guidance in Screen Share or approved execution in Isolated Browser.
+- Interactive Plan Board: one active step at a time with ask, observe, done, skip, and blocked controls.
+- Ask Codex bar: quick follow-ups for what it sees, next step, where to click, and verification.
 - Workflow presets: guide a screen, automate a browser, compare research windows, or debug with an assistant.
 - Safety controls: pause, resume, stop, approvals, blocked domains, and credential/download gates.
+
+![CodexForWorkflow guided workflow](docs/screenshots/guided-workflow.png)
 
 ![CodexForWorkflow approval flow](docs/screenshots/approval-flow.png)
 

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "node:path";
-import type { BrowserAction, BrowserPolicy, StartTaskInput } from "../shared/types";
+import type { BrowserAction, BrowserPolicy, PlanStep, StartTaskInput } from "../shared/types";
 import { DEFAULT_POLICY } from "./services/browserPolicy";
 import { TaskSessionManager } from "./services/taskSessionManager";
 
@@ -90,9 +90,16 @@ function registerIpc(): void {
   ipcMain.handle("screen:observe-pinned", () => createManager().observePinnedSources());
   ipcMain.handle("mouse-plan:resolve", (_event, allowed: boolean) => createManager().resolveMousePlan(allowed));
   ipcMain.handle("task:start", (_event, input: StartTaskInput) => createManager().startTask(input));
+  ipcMain.handle("task:send-command", (_event, prompt: string) => createManager().sendCommand(prompt));
+  ipcMain.handle("task:observe-current", () => createManager().observeCurrent());
   ipcMain.handle("task:pause", () => createManager().pauseTask());
   ipcMain.handle("task:resume", () => createManager().resumeTask());
   ipcMain.handle("task:stop", () => createManager().stopTask());
+  ipcMain.handle(
+    "plan-step:update",
+    (_event, payload: { stepId: string; status: PlanStep["status"]; note?: string }) =>
+      createManager().updatePlanStepFromUser(payload.stepId, payload.status, payload.note)
+  );
   ipcMain.handle(
     "approval:resolve",
     (_event, payload: { id: string; allowed: boolean; editedAction?: BrowserAction }) =>

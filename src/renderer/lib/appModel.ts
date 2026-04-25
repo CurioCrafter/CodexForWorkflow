@@ -1,4 +1,4 @@
-import type { AppState, ApprovalMode, PlanStep, TaskEnvironment, TaskStatus, WorkflowPresetId } from "../../shared/types";
+import type { AppState, ApprovalMode, MousePlan, PlanStep, TaskEnvironment, TaskStatus, WorkflowPresetId } from "../../shared/types";
 
 export const emptyState: AppState = {
   authStatus: "Not checked",
@@ -67,6 +67,12 @@ export function getTaskControlState(input: {
   running: boolean;
   startDisabled: boolean;
   startReason?: string;
+  askDisabled: boolean;
+  askReason?: string;
+  observeDisabled: boolean;
+  observeReason?: string;
+  mousePlanDisabled: boolean;
+  mousePlanReason?: string;
   pauseDisabled: boolean;
   resumeDisabled: boolean;
   stopDisabled: boolean;
@@ -84,15 +90,88 @@ export function getTaskControlState(input: {
         : input.busy
           ? "The app is finishing the current request."
           : undefined;
+  const askReason = input.busy
+    ? "The app is finishing the current request."
+    : !running
+      ? "Start a task before asking Codex a follow-up."
+      : undefined;
+  const observeReason = input.busy
+    ? "The app is finishing the current request."
+    : !running && !input.screenSharing
+      ? "Start screen sharing or a browser task before observing."
+      : undefined;
+  const mousePlanReason = input.busy
+    ? "The app is finishing the current request."
+    : !running
+      ? "Start a task before requesting a Mouse Plan."
+      : undefined;
 
   return {
     running,
     startDisabled: Boolean(startReason),
     startReason,
+    askDisabled: Boolean(askReason),
+    askReason,
+    observeDisabled: Boolean(observeReason),
+    observeReason,
+    mousePlanDisabled: Boolean(mousePlanReason),
+    mousePlanReason,
     pauseDisabled: !running || input.status === "paused",
     resumeDisabled: input.status !== "paused",
     stopDisabled: !running && !input.screenSharing
   };
+}
+
+export function getActivePlanStep(steps: PlanStep[], environment: TaskEnvironment): PlanStep {
+  const usableSteps = steps.length > 0 ? steps : fallbackPlan(environment);
+  return (
+    usableSteps.find((step) => step.status === "active") ??
+    usableSteps.find((step) => step.status === "pending") ??
+    usableSteps[usableSteps.length - 1]
+  );
+}
+
+export function getStepInstruction(step: PlanStep, environment: TaskEnvironment): string {
+  if (step.status === "blocked") {
+    return "Resolve the blocker or ask Codex for a smaller next step.";
+  }
+  switch (step.kind) {
+    case "observe":
+      return "Refresh the visible context, then let Codex inspect what changed.";
+    case "decide":
+      return "Review Codex's reasoning and ask for clarification if the next step is unclear.";
+    case "guide":
+      return "Follow the visible guidance manually. The app will not control your desktop.";
+    case "act":
+      return environment === "isolated-browser"
+        ? "Review the proposed browser action before allowing automation."
+        : "Use manual guidance only in Screen Share mode.";
+    case "verify":
+      return "Observe again and confirm whether the task moved forward.";
+    default:
+      return "Ask Codex for the next concrete step.";
+  }
+}
+
+export function getMousePlanInstruction(plan: MousePlan): string {
+  if (plan.executionMode === "screen-guidance") {
+    return `You perform this manually on ${plan.sourceName ?? "the shared source"}. Codex is only pointing at the target.`;
+  }
+  return "This can run inside the isolated browser after you approve it.";
+}
+
+export function buildFollowUpPrompt(kind: "see" | "next" | "mouse" | "verify", activeStep?: PlanStep): string {
+  const context = activeStep ? ` Current Plan Board step: ${activeStep.title}.` : "";
+  switch (kind) {
+    case "see":
+      return `What do you see right now?${context}`;
+    case "next":
+      return `What is the next concrete step?${context}`;
+    case "mouse":
+      return `Propose a Mouse Plan for the next visible target.${context}`;
+    case "verify":
+      return `Observe again and verify whether the last step worked.${context}`;
+  }
 }
 
 export function fallbackPlan(environment: TaskEnvironment): PlanStep[] {

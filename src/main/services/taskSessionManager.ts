@@ -298,6 +298,52 @@ export class TaskSessionManager extends EventEmitter {
     await this.stopActiveTask(true);
   }
 
+  async sendCommand(prompt: string): Promise<void> {
+    const trimmed = prompt.trim();
+    if (!trimmed) {
+      throw new Error("Follow-up command is required.");
+    }
+    if (!this.state.session || ["idle", "stopped", "failed"].includes(this.state.session.status)) {
+      throw new Error("Start a task before asking Codex a follow-up.");
+    }
+    await this.codex.sendCommand(trimmed);
+    this.setSessionStatus("running");
+    this.addTimeline("app", "info", `Asked Codex: ${trimmed}`);
+  }
+
+  async observeCurrent(): Promise<void> {
+    if (this.state.session?.environment === "isolated-browser") {
+      const observation = await this.harness.observe();
+      this.updateObservation(observation);
+      this.addTimeline("browser", "info", "Observed isolated browser.");
+      return;
+    }
+
+    if (this.state.session?.environment === "screen-share" || this.state.screenSharing) {
+      await this.observePinnedSources();
+      this.addTimeline("screen", "info", "Refreshed shared screen context.");
+      return;
+    }
+
+    throw new Error("Start screen sharing or a browser task before observing.");
+  }
+
+  updatePlanStepFromUser(stepId: string, status: PlanStep["status"], note?: string): void {
+    const validStatuses = new Set<PlanStep["status"]>(["pending", "active", "completed", "blocked", "skipped"]);
+    if (!validStatuses.has(status)) {
+      throw new Error(`Unsupported plan step status: ${status}`);
+    }
+    const current = this.state.planSteps.find((step) => step.id === stepId);
+    if (!current) {
+      throw new Error(`Unknown plan step: ${stepId}`);
+    }
+    this.state.planSteps = applyUserPlanStepUpdate(this.state.planSteps, stepId, status, note);
+    this.state.activePlanStepId = this.state.planSteps.find((step) => step.status === "active")?.id;
+    const detail = note?.trim() ? note.trim() : undefined;
+    this.addTimeline("app", status === "blocked" ? "warning" : "info", `Plan step ${status}: ${current.title}`, detail);
+    this.emitState();
+  }
+
   pauseTask(): void {
     this.setSessionStatus("paused");
     this.addTimeline("app", "info", "Paused browser actions.");
@@ -694,6 +740,28 @@ function createInitialPlanSteps(environment: TaskSession["environment"]): PlanSt
       risk: "low"
     }
   ];
+}
+
+function applyUserPlanStepUpdate(
+  steps: PlanStep[],
+  stepId: string,
+  status: PlanStep["status"],
+  note?: string
+): PlanStep[] {
+  const updated = updatePlanStepStatus(steps, stepId, status, note);
+  if (!["completed", "skipped"].includes(status)) {
+    return updated;
+  }
+  const hasActive = updated.some((step) => step.status === "active");
+  if (hasActive) {
+    return updated;
+  }
+  const completedIndex = updated.findIndex((step) => step.id === stepId);
+  const nextPendingIndex = updated.findIndex((step, index) => index > completedIndex && step.status === "pending");
+  if (nextPendingIndex < 0) {
+    return updated;
+  }
+  return updated.map((step, index) => index === nextPendingIndex ? { ...step, status: "active" } : step);
 }
 
 function requireStringArg(args: unknown, key: string): string {

@@ -14,7 +14,9 @@ try {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 
-  await capture(page, server.url, "overview", path.join(screenshotDir, "command-center.png"));
+  await capture(page, server.url, "first-run", path.join(screenshotDir, "first-run.png"));
+  await capture(page, server.url, "guide", path.join(screenshotDir, "guided-workflow.png"));
+  await capture(page, server.url, "mouse-plan", path.join(screenshotDir, "command-center.png"));
   await capture(page, server.url, "approval", path.join(screenshotDir, "approval-flow.png"));
 
   await browser.close();
@@ -26,7 +28,7 @@ async function capture(page, baseUrl, variant, outputPath) {
   await page.goto(`${baseUrl}/?demo=${variant}`, { waitUntil: "networkidle" });
   await page.locator("text=CodexForWorkflow").first().waitFor({ timeout: 10000 });
   await page.locator("text=Live Work Surface").first().waitFor({ timeout: 10000 });
-  await page.screenshot({ path: outputPath, fullPage: true });
+  await page.screenshot({ path: outputPath });
   console.log(`captured ${path.relative(root, outputPath)}`);
 }
 

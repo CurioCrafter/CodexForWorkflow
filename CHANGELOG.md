@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 0.1.1 - 2026-04-25
+
+### Changed
+
+- Reworked the app around a guided workspace with setup, current step, live surface, and Ask Codex controls.
+- Made Plan Board steps interactive with ask, done, skip, observe, and blocked actions.
+- Made Mouse Plan guidance clearer for screen-share and isolated-browser workflows.
+- Regenerated public screenshots for first-run, guided workflow, Mouse Plan, and approval flow states.
+
+### Added
+
+- Added follow-up command, observe-current, and local plan-step update IPC methods.
+- Added tests for guided workflow helpers, manager follow-up commands, local plan updates, and observe-only Mouse Plan safety.
+
+## 0.1.0 - 2026-04-25
+
 ### Changed
 
 - Refactored the renderer into public-facing command-center components.
@@ -12,8 +28,6 @@
 
 - Added install, safety, architecture, troubleshooting, and release docs.
 - Added PR template, issue template guidance, and Dependabot configuration.
-
-## 0.1.0
 
 ### Added
 

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { AppState, BrowserAction, BrowserPolicy, ScreenSource, StartTaskInput } from "../shared/types";
+import type { AppState, BrowserAction, BrowserPolicy, PlanStep, ScreenSource, StartTaskInput } from "../shared/types";
 
 const api = {
   getState: (): Promise<AppState> => ipcRenderer.invoke("app:get-state"),
@@ -21,9 +21,13 @@ const api = {
   observePinnedSources: (): Promise<void> => ipcRenderer.invoke("screen:observe-pinned"),
   resolveMousePlan: (allowed: boolean): Promise<void> => ipcRenderer.invoke("mouse-plan:resolve", allowed),
   startTask: (input: StartTaskInput): Promise<void> => ipcRenderer.invoke("task:start", input),
+  sendCommand: (prompt: string): Promise<void> => ipcRenderer.invoke("task:send-command", prompt),
+  observeCurrent: (): Promise<void> => ipcRenderer.invoke("task:observe-current"),
   pauseTask: (): Promise<void> => ipcRenderer.invoke("task:pause"),
   resumeTask: (): Promise<void> => ipcRenderer.invoke("task:resume"),
   stopTask: (): Promise<void> => ipcRenderer.invoke("task:stop"),
+  updatePlanStep: (stepId: string, status: PlanStep["status"], note?: string): Promise<void> =>
+    ipcRenderer.invoke("plan-step:update", { stepId, status, note }),
   resolveApproval: (
     id: string,
     allowed: boolean,

@@ -1,21 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import type { BrowserAction, BrowserPolicy, ScreenSource, TaskEnvironment, WorkflowPresetId } from "../shared/types";
+import type { BrowserAction, BrowserPolicy, PlanStep, ScreenSource, TaskEnvironment, WorkflowPresetId } from "../shared/types";
 import { LeftRail } from "./components/LeftRail";
 import { RightRail } from "./components/RightRail";
 import { WorkZone } from "./components/WorkZone";
 import { createDemoState } from "./demoState";
-import { emptyState, getTaskControlState, presets, splitDomains } from "./lib/appModel";
+import { emptyState, getActivePlanStep, getTaskControlState, presets, splitDomains } from "./lib/appModel";
 
 const demoVariant = new URLSearchParams(window.location.search).get("demo");
 const isDemoMode = demoVariant !== null;
+const initialState = isDemoMode ? createDemoState(demoVariant) : emptyState;
 
 export default function App() {
-  const [state, setState] = useState(() => (isDemoMode ? createDemoState(demoVariant) : emptyState));
-  const [task, setTask] = useState(presets[0].task);
+  const [state, setState] = useState(() => initialState);
+  const [task, setTask] = useState(() => initialState.session?.task ?? presets[0].task);
   const [quickPrompt, setQuickPrompt] = useState("What do you see, and what should I do next?");
   const [model, setModel] = useState("gpt-5.5");
-  const [environment, setEnvironment] = useState<TaskEnvironment>("screen-share");
-  const [workflowPreset, setWorkflowPreset] = useState<WorkflowPresetId>("guide-screen");
+  const [environment, setEnvironment] = useState<TaskEnvironment>(() => initialState.session?.environment ?? "screen-share");
+  const [workflowPreset, setWorkflowPreset] = useState<WorkflowPresetId>(() =>
+    initialState.session?.environment === "isolated-browser" ? "automate-browser" : "guide-screen"
+  );
   const [screenSourceId, setScreenSourceId] = useState("");
   const [allowedDomains] = useState("");
   const [blockedDomains] = useState(emptyState.policy.blockedDomains.join(", "));
@@ -70,7 +73,7 @@ export default function App() {
     pinnedSources[0] ??
     workspaceSources.find((source) => source.id === screenSourceId);
   const focusedObservation = focusedSource ? state.screenWorkspace.observations[focusedSource.id] : undefined;
-  const stageObservation = focusedObservation ?? state.observation;
+  const stageObservation = environment === "isolated-browser" ? state.observation : focusedObservation ?? state.observation;
   const secondarySources = pinnedSources.filter((source) => source.id !== focusedSource?.id);
   const observationLabel =
     stageObservation?.environment === "screen-share"
@@ -78,6 +81,7 @@ export default function App() {
       : stageObservation?.environment === "isolated-browser"
         ? stageObservation.url
         : "No live work surface";
+  const activeStep = state.planSteps.length > 0 ? getActivePlanStep(state.planSteps, environment) : undefined;
   const controlState = getTaskControlState({
     busy,
     environment,
@@ -123,6 +127,20 @@ export default function App() {
     });
   }
 
+  function sendCommand(prompt: string) {
+    const trimmed = prompt.trim();
+    if (!trimmed) {
+      setError("Follow-up command is required.");
+      return;
+    }
+    setQuickPrompt(trimmed);
+    void invoke(() => window.browserPilot.sendCommand(trimmed));
+  }
+
+  function updatePlanStep(stepId: string, status: PlanStep["status"], note?: string) {
+    void invoke(() => window.browserPilot.updatePlanStep(stepId, status, note));
+  }
+
   return (
     <main className="command-shell">
       <LeftRail
@@ -162,6 +180,7 @@ export default function App() {
         sessionModel={state.session?.model}
         sessionStatus={state.session?.status}
         task={task}
+        activeStep={activeStep}
         mousePlan={state.mousePlan}
         onModelChange={setModel}
         onObservePinned={() => invoke(() => window.browserPilot.observePinnedSources())}
@@ -170,6 +189,7 @@ export default function App() {
         onStop={() => invoke(() => (controlState.running ? window.browserPilot.stopTask() : window.browserPilot.stopScreenShare()))}
         onFocusSource={(sourceId) => invoke(() => window.browserPilot.focusScreenSource(sourceId))}
         onQuickPromptChange={setQuickPrompt}
+        onSendCommand={sendCommand}
         onTaskChange={setTask}
         onStartTask={() => invoke(startTask)}
       />
@@ -180,10 +200,15 @@ export default function App() {
         mousePlan={state.mousePlan}
         pendingApprovals={state.pendingApprovals}
         timeline={state.timeline}
+        askDisabled={controlState.askDisabled}
+        askReason={controlState.askReason}
+        onObserveCurrent={() => invoke(() => window.browserPilot.observeCurrent())}
         onResolveApproval={(id: string, allowed: boolean, editedAction?: BrowserAction) =>
           window.browserPilot.resolveApproval(id, allowed, editedAction)
         }
         onResolveMousePlan={(allowed) => invoke(() => window.browserPilot.resolveMousePlan(allowed))}
+        onSendCommand={sendCommand}
+        onUpdatePlanStep={updatePlanStep}
         onOpenDocs={() => invoke(() => window.browserPilot.openExternal("https://developers.openai.com/codex/app-server"))}
       />
     </main>

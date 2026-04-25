@@ -1,13 +1,15 @@
-import { AlertTriangle, Loader2, Monitor, MousePointer2, Pause, Play, RefreshCw, Square } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, Monitor, MousePointer2, Pause, Play, RefreshCw, Send, Square, Target } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import type {
   BrowserPolicy,
   MousePlan,
   Observation,
+  PlanStep,
   ScreenSource,
   TaskEnvironment,
   TaskStatus
 } from "../../shared/types";
+import { buildFollowUpPrompt, getStepInstruction } from "../lib/appModel";
 import { getMousePlanOverlayLayout } from "../lib/mousePlanLayout";
 
 interface WorkZoneProps {
@@ -16,6 +18,12 @@ interface WorkZoneProps {
     running: boolean;
     startDisabled: boolean;
     startReason?: string;
+    askDisabled: boolean;
+    askReason?: string;
+    observeDisabled: boolean;
+    observeReason?: string;
+    mousePlanDisabled: boolean;
+    mousePlanReason?: string;
     pauseDisabled: boolean;
     resumeDisabled: boolean;
     stopDisabled: boolean;
@@ -33,6 +41,7 @@ interface WorkZoneProps {
   sessionModel?: string;
   sessionStatus?: TaskStatus;
   task: string;
+  activeStep?: PlanStep;
   mousePlan?: MousePlan;
   onModelChange: (value: string) => void;
   onObservePinned: () => void;
@@ -41,6 +50,7 @@ interface WorkZoneProps {
   onStop: () => void;
   onFocusSource: (sourceId: string) => void;
   onQuickPromptChange: (value: string) => void;
+  onSendCommand: (prompt: string) => void;
   onTaskChange: (value: string) => void;
   onStartTask: () => void;
 }
@@ -60,6 +70,7 @@ export function WorkZone({
   sessionModel,
   sessionStatus,
   task,
+  activeStep,
   mousePlan,
   onModelChange,
   onObservePinned,
@@ -68,9 +79,17 @@ export function WorkZone({
   onStop,
   onFocusSource,
   onQuickPromptChange,
+  onSendCommand,
   onTaskChange,
   onStartTask
 }: WorkZoneProps) {
+  const quickChips = [
+    { label: "What do you see?", prompt: buildFollowUpPrompt("see", activeStep) },
+    { label: "Next step", prompt: buildFollowUpPrompt("next", activeStep) },
+    { label: "Show target", prompt: buildFollowUpPrompt("mouse", activeStep) },
+    { label: "Verify", prompt: buildFollowUpPrompt("verify", activeStep) }
+  ];
+
   return (
     <section className="work-zone">
       <motion.header
@@ -103,6 +122,8 @@ export function WorkZone({
         </div>
       </motion.header>
 
+      <CurrentStepBanner step={activeStep} environment={environment} onObserve={onObservePinned} />
+
       <LiveWorkSurface environment={environment} observation={observation} mousePlan={mousePlan} />
 
       <div className="secondary-strip">
@@ -125,7 +146,7 @@ export function WorkZone({
         )}
       </div>
 
-      <section className="command-bar">
+      <section className="command-bar guided-command-bar">
         <label>
           <span>Task</span>
           <textarea value={task} onChange={(event) => onTaskChange(event.target.value)} />
@@ -140,13 +161,27 @@ export function WorkZone({
         </label>
         <button
           className="primary"
-          disabled={controlState.startDisabled}
-          onClick={onStartTask}
-          title={controlState.startReason ?? "Start task"}
+          disabled={controlState.running ? controlState.askDisabled || !quickPrompt.trim() : controlState.startDisabled}
+          onClick={controlState.running ? () => onSendCommand(quickPrompt) : onStartTask}
+          title={controlState.running ? controlState.askReason ?? "Ask Codex" : controlState.startReason ?? "Start task"}
         >
-          {busy ? <Loader2 className="spin" size={16} /> : <Play size={16} />}
-          Start
+          {busy ? <Loader2 className="spin" size={16} /> : controlState.running ? <Send size={16} /> : <Play size={16} />}
+          {controlState.running ? "Ask" : "Start"}
         </button>
+        <div className="quick-chip-row">
+          {quickChips.map((chip) => (
+            <button
+              key={chip.label}
+              type="button"
+              className="quick-chip"
+              disabled={controlState.askDisabled}
+              onClick={() => onSendCommand(chip.prompt)}
+              title={controlState.askReason ?? chip.prompt}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
       </section>
 
       <AnimatePresence>
@@ -171,6 +206,43 @@ export function WorkZone({
   );
 }
 
+function CurrentStepBanner({
+  step,
+  environment,
+  onObserve
+}: {
+  step?: PlanStep;
+  environment: TaskEnvironment;
+  onObserve: () => void;
+}) {
+  if (!step) {
+    return (
+      <section className="current-step-banner empty">
+        <Target size={18} />
+        <div>
+          <span>Guided workspace</span>
+          <strong>Start with a task, then Codex will keep the current step visible here.</strong>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className={`current-step-banner ${step.risk}`}>
+      <CheckCircle2 size={18} />
+      <div>
+        <span>Current step: {step.kind}</span>
+        <strong>{step.title}</strong>
+        <p>{getStepInstruction(step, environment)}</p>
+      </div>
+      <button className="secondary" onClick={onObserve}>
+        <RefreshCw size={14} />
+        Observe now
+      </button>
+    </section>
+  );
+}
+
 function LiveWorkSurface({
   environment,
   observation,
@@ -189,7 +261,9 @@ function LiveWorkSurface({
     >
       <div className="surface-label">
         <span>Live Work Surface</span>
-        <strong>{observation?.environment === "screen-share" ? "Observe-only" : "Browser control"}</strong>
+        <strong>
+          {(observation?.environment ?? environment) === "screen-share" ? "Observe-only" : "Browser control"}
+        </strong>
       </div>
       {observation?.screenshot ? (
         <>

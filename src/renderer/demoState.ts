@@ -1,4 +1,4 @@
-import type { AppState, PlanStep, ScreenObservation, ScreenSource } from "../shared/types";
+import type { AppState, BrowserObservation, BrowserPolicy, PlanStep, ScreenObservation, ScreenSource, TaskSession } from "../shared/types";
 
 const sources: ScreenSource[] = [
   { id: "screen:demo-main:0", name: "Main Display - Debug Workspace", type: "screen" },
@@ -45,16 +45,58 @@ const planSteps: PlanStep[] = [
   }
 ];
 
+const demoPolicy: BrowserPolicy = {
+  allowedDomains: [],
+  blockedDomains: ["bank", "paypal.com", "stripe.com"],
+  approvalMode: "confirm-risky",
+  downloadsAllowed: false,
+  credentialEntryAllowed: false,
+  retentionDays: 1
+};
+
 export function createDemoState(variant: string | null): AppState {
+  const demoVariant = variant ?? "mouse-plan";
+  if (demoVariant === "first-run") {
+    return {
+      authStatus: "Not checked",
+      screenSources: [],
+      screenWorkspace: { sources: [], pinnedSourceIds: [], observations: {} },
+      screenSharing: false,
+      policy: demoPolicy,
+      planSteps: [],
+      pendingApprovals: [],
+      timeline: [],
+      finalSummary: undefined
+    };
+  }
+
   const observations = Object.fromEntries(
     sources.map((source, index) => [
       source.id,
       createObservation(source, index === 0 ? "Debug Command Center" : index === 1 ? "Runtime Notes" : "Docs Reference", index)
     ])
   ) as Record<string, ScreenObservation>;
+  const isApproval = demoVariant === "approval";
+  const showMousePlan = ["overview", "mouse-plan", "approval"].includes(demoVariant);
+  const environment = isApproval ? "isolated-browser" : "screen-share";
+  const browserObservation = createBrowserObservation();
+  const observation = isApproval ? browserObservation : observations[sources[0].id];
+  const session: TaskSession = {
+    id: "demo-session",
+    status: isApproval ? "awaiting-approval" : "running",
+    task: isApproval
+      ? "Review this isolated-browser action and require approval before it runs."
+      : "Guide this workflow one safe step at a time.",
+    model: "gpt-5.5",
+    requestedModel: "gpt-5.5",
+    startedAt: new Date(0).toISOString(),
+    environment,
+    approvalMode: "confirm-risky"
+  };
 
   return {
     authStatus: "Logged in using ChatGPT\nCodex CLI=demo\nNode=demo",
+    session,
     screenSources: sources,
     selectedScreenSource: sources[0],
     screenWorkspace: {
@@ -66,45 +108,40 @@ export function createDemoState(variant: string | null): AppState {
       focusedSourceId: sources[0].id,
       observations
     },
-    screenSharing: true,
-    observation: observations[sources[0].id],
-    policy: {
-      allowedDomains: [],
-      blockedDomains: ["bank", "paypal.com", "stripe.com"],
-      approvalMode: "confirm-risky",
-      downloadsAllowed: false,
-      credentialEntryAllowed: false,
-      retentionDays: 1
-    },
-    planSteps,
-    activePlanStepId: "decide",
-    mousePlan: {
-      id: "mouse-demo",
-      environment: "screen-share",
-      executionMode: "screen-guidance",
-      sourceId: sources[0].id,
-      sourceName: sources[0].name,
-      viewport: { width: 1440, height: 900 },
-      x: variant === "approval" ? 980 : 1040,
-      y: variant === "approval" ? 520 : 410,
-      intent: variant === "approval" ? "click" : "guide",
-      label: variant === "approval" ? "Review before send" : "Next best step",
-      rationale:
-        variant === "approval"
-          ? "This action could send information externally, so the user should approve it first."
-          : "This target advances the workflow while keeping desktop control in the user's hands.",
-      risk: variant === "approval" ? "high" : "medium",
-      createdAt: new Date(0).toISOString()
-    },
+    screenSharing: !isApproval,
+    observation,
+    policy: demoPolicy,
+    planSteps: isApproval ? approvalPlanSteps() : planSteps,
+    activePlanStepId: isApproval ? "approval-act" : "decide",
+    mousePlan: showMousePlan
+      ? {
+          id: "mouse-demo",
+          environment,
+          executionMode: isApproval ? "browser-automated" : "screen-guidance",
+          sourceId: isApproval ? undefined : sources[0].id,
+          sourceName: isApproval ? "Isolated browser" : sources[0].name,
+          viewport: { width: 1440, height: 900 },
+          x: isApproval ? 980 : 1040,
+          y: isApproval ? 520 : 410,
+          intent: isApproval ? "click" : "guide",
+          label: isApproval ? "Review before send" : "Next best step",
+          rationale: isApproval
+            ? "This action could send information externally, so the user should approve it first."
+            : "This target advances the workflow while keeping desktop control in the user's hands.",
+          risk: isApproval ? "high" : "medium",
+          action: isApproval ? { type: "click", x: 980, y: 520, button: "left" } : undefined,
+          createdAt: new Date(0).toISOString()
+        }
+      : undefined,
     pendingApprovals:
-      variant === "approval"
+      isApproval
         ? [
             {
               id: "approval-demo",
               action: { type: "click", x: 980, y: 520, button: "left" },
               riskReason: "External send-like action requires approval.",
-              screenshot: observations[sources[0].id].screenshot,
-              observation: observations[sources[0].id],
+              screenshot: browserObservation.screenshot,
+              observation: browserObservation,
               createdAt: new Date(0).toISOString()
             }
           ]
@@ -127,17 +164,35 @@ export function createDemoState(variant: string | null): AppState {
       {
         id: "timeline-3",
         source: "codex",
-        level: variant === "approval" ? "warning" : "info",
-        message: variant === "approval" ? "Mouse Plan: Review before send" : "Mouse Plan: Next best step",
-        detail:
-          variant === "approval"
-            ? "Approval is required before a browser action would execute."
-            : "Displayed as observe-only guidance for the shared screen.",
+        level: isApproval ? "warning" : showMousePlan ? "info" : "success",
+        message: isApproval ? "Mouse Plan: Review before send" : showMousePlan ? "Mouse Plan: Next best step" : "Active guidance is ready",
+        detail: isApproval
+          ? "Approval is required before a browser action would execute."
+          : showMousePlan
+            ? "Displayed as observe-only guidance for the shared screen."
+            : "Codex is waiting for a follow-up command or a manual observation refresh.",
         timestamp: new Date(2000).toISOString()
       }
     ],
     finalSummary: undefined
   };
+}
+
+function approvalPlanSteps(): PlanStep[] {
+  return [
+    { ...planSteps[0], status: "completed" },
+    { ...planSteps[1], status: "completed" },
+    {
+      id: "approval-act",
+      kind: "act",
+      title: "Review risky browser action",
+      detail: "Approve, edit, or deny the proposed isolated-browser click before it runs.",
+      status: "active",
+      confidence: 0.82,
+      risk: "high"
+    },
+    { ...planSteps[3], status: "pending" }
+  ];
 }
 
 function createObservation(source: ScreenSource, title: string, index: number): ScreenObservation {
@@ -148,6 +203,18 @@ function createObservation(source: ScreenSource, title: string, index: number): 
     sourceId: source.id,
     sourceName: source.name,
     timestamp: new Date(0).toISOString()
+  };
+}
+
+function createBrowserObservation(): BrowserObservation {
+  return {
+    environment: "isolated-browser",
+    screenshot: createScreenshot("Approval Review", "Isolated Browser - External Send Review", 3),
+    viewport: { width: 1440, height: 900 },
+    url: "https://example.test/review",
+    title: "Approval Review",
+    timestamp: new Date(0).toISOString(),
+    pageText: "Review before send. External action requires approval."
   };
 }
 
