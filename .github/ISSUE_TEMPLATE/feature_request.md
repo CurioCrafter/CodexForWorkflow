@@ -12,8 +12,16 @@ assignees: ""
 ## Proposed Change
 
 
+## Affected Area
+
+- [ ] Screen Share
+- [ ] Isolated Browser
+- [ ] Plan Board / Mouse Plan
+- [ ] Approvals / safety policy
+- [ ] Packaging / install
+- [ ] Documentation
+
 ## Why It Matters
 
 
 ## Notes
-

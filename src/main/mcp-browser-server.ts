@@ -289,7 +289,7 @@ async function handleMethod(method: string, params: unknown): Promise<unknown> {
       return {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "codex-browser-pilot", version: "0.1.0" }
+        serverInfo: { name: "codex-for-workflow", version: "0.1.0" }
       };
     case "notifications/initialized":
       return {};

@@ -6,6 +6,18 @@
   "author": "Andrew Rainsberger",
   "license": "MIT",
   "private": false,
+  "keywords": [
+    "codex",
+    "electron",
+    "playwright",
+    "windows",
+    "automation",
+    "human-in-the-loop",
+    "desktop-app",
+    "ai-assistant",
+    "screen-observation",
+    "workflow"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/CurioCrafter/CodexForWorkflow.git"
@@ -16,16 +28,21 @@
     "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
     "dev:renderer": "vite --host 127.0.0.1",
     "dev:electron": "wait-on tcp:5173 && npm run build:main && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .",
+    "clean": "node scripts/clean.mjs",
+    "clean:release": "node scripts/clean.mjs release",
     "build": "npm run build:main && npm run build:renderer",
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "vite build",
     "start": "electron .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
-    "check": "npm run typecheck && npm test && npm run build",
+    "check": "npm run typecheck && npm test && npm run build && npm run smoke:renderer",
     "prepare:browsers": "playwright install chromium",
-    "package": "npm run build && electron-builder --dir --publish never",
-    "package:win": "npm run build && electron-builder --win nsis portable --publish never"
+    "screenshots": "npm run build && node scripts/capture-demo-screenshots.mjs",
+    "smoke:renderer": "node scripts/renderer-smoke.mjs",
+    "validate:release": "node scripts/validate-release.mjs",
+    "package": "npm run clean && npm run build && electron-builder --dir --publish never",
+    "package:win": "npm run clean && npm run build && electron-builder --win nsis portable --publish never && npm run validate:release"
   },
   "dependencies": {
     "framer-motion": "^12.23.26",

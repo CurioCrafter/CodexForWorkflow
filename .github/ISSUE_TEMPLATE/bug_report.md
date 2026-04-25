@@ -27,7 +27,13 @@ assignees: ""
 - Node.js version:
 - Codex CLI version:
 - CodexForWorkflow version/commit:
+- App mode: Screen Share / Isolated Browser / Packaging / Install
+- Workflow preset:
 
 ## Logs
 
 Paste relevant logs with secrets removed.
+
+## Screenshots
+
+Attach screenshots only if they do not expose private data.

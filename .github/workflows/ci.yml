@@ -6,9 +6,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"
 
 jobs:
-  check:
+  validate:
     runs-on: windows-latest
 
     steps:
@@ -27,14 +29,36 @@ jobs:
       - name: Install Playwright Chromium
         run: npm run prepare:browsers
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Check
+        run: npm run check
 
-      - name: Test
-        run: npm test
+      - name: Upload renderer smoke screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: renderer-smoke-${{ github.sha }}
+          path: tmp/renderer-smoke/*.png
+          if-no-files-found: ignore
 
-      - name: Build
-        run: npm run build
+  package-windows:
+    runs-on: windows-latest
+    needs: validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npm run prepare:browsers
 
       - name: Package Windows app
         run: npm run package:win
@@ -42,5 +66,8 @@ jobs:
       - name: Upload packaged app
         uses: actions/upload-artifact@v4
         with:
-          name: CodexForWorkflow-Windows
-          path: release/*
+          name: CodexForWorkflow-Windows-${{ github.sha }}
+          path: |
+            release/CodexForWorkflow-*-setup-win-x64.exe
+            release/CodexForWorkflow-*-portable-win-x64.exe
+            release/CodexForWorkflow-*-setup-win-x64.exe.blockmap

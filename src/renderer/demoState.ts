@@ -1,9 +1,9 @@
 import type { AppState, PlanStep, ScreenObservation, ScreenSource } from "../shared/types";
 
 const sources: ScreenSource[] = [
-  { id: "screen:demo-main:0", name: "Main Display - Research Workspace", type: "screen" },
-  { id: "window:demo-editor:0", name: "Editor - Workflow Notes", type: "window" },
-  { id: "window:demo-browser:0", name: "Browser - Product Docs", type: "window" }
+  { id: "screen:demo-main:0", name: "Main Display - Debug Workspace", type: "screen" },
+  { id: "window:demo-editor:0", name: "Editor - Agent Runtime", type: "window" },
+  { id: "window:demo-browser:0", name: "Browser - Codex Docs", type: "window" }
 ];
 
 const planSteps: PlanStep[] = [
@@ -49,7 +49,7 @@ export function createDemoState(variant: string | null): AppState {
   const observations = Object.fromEntries(
     sources.map((source, index) => [
       source.id,
-      createObservation(source, index === 0 ? "Live Work Surface" : index === 1 ? "Plan Notes" : "Docs Reference")
+      createObservation(source, index === 0 ? "Debug Command Center" : index === 1 ? "Runtime Notes" : "Docs Reference", index)
     ])
   ) as Record<string, ScreenObservation>;
 
@@ -121,7 +121,7 @@ export function createDemoState(variant: string | null): AppState {
         id: "timeline-2",
         source: "screen",
         level: "success",
-        message: "Sharing Main Display - Research Workspace.",
+        message: "Sharing Main Display - Debug Workspace.",
         timestamp: new Date(1000).toISOString()
       },
       {
@@ -140,10 +140,10 @@ export function createDemoState(variant: string | null): AppState {
   };
 }
 
-function createObservation(source: ScreenSource, title: string): ScreenObservation {
+function createObservation(source: ScreenSource, title: string, index: number): ScreenObservation {
   return {
     environment: "screen-share",
-    screenshot: createScreenshot(title, source.name),
+    screenshot: createScreenshot(title, source.name, index),
     viewport: { width: 1440, height: 900 },
     sourceId: source.id,
     sourceName: source.name,
@@ -151,32 +151,54 @@ function createObservation(source: ScreenSource, title: string): ScreenObservati
   };
 }
 
-function createScreenshot(title: string, subtitle: string): string {
+function createScreenshot(title: string, subtitle: string, index: number): string {
+  const isEditor = index === 1;
+  const isDocs = index === 2;
   return svgDataUri(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
-      <rect width="1440" height="900" fill="#151814"/>
-      <rect x="64" y="64" width="1312" height="772" rx="26" fill="#f8f5ee"/>
-      <rect x="104" y="112" width="540" height="44" rx="10" fill="#223d35"/>
-      <text x="128" y="141" fill="#fffdf8" font-family="Segoe UI, Arial" font-size="22" font-weight="700">${escapeXml(title)}</text>
-      <text x="104" y="200" fill="#4a463f" font-family="Segoe UI, Arial" font-size="22" font-weight="700">${escapeXml(subtitle)}</text>
-      <rect x="104" y="238" width="1232" height="2" fill="#ded8cd"/>
-      <rect x="104" y="284" width="350" height="430" rx="16" fill="#eef4f1"/>
-      <rect x="494" y="284" width="390" height="430" rx="16" fill="#fffdf8" stroke="#d9d2c6"/>
-      <rect x="924" y="284" width="412" height="430" rx="16" fill="#fff9ee" stroke="#e8c99f"/>
-      <text x="134" y="332" fill="#223d35" font-family="Segoe UI, Arial" font-size="18" font-weight="700">Observation</text>
-      <text x="524" y="332" fill="#223d35" font-family="Segoe UI, Arial" font-size="18" font-weight="700">Plan Board</text>
-      <text x="954" y="332" fill="#9b541a" font-family="Segoe UI, Arial" font-size="18" font-weight="700">Mouse Plan</text>
-      <rect x="134" y="368" width="260" height="14" rx="7" fill="#8ea79f"/>
-      <rect x="134" y="400" width="220" height="14" rx="7" fill="#b9c7c2"/>
-      <rect x="134" y="432" width="300" height="14" rx="7" fill="#b9c7c2"/>
-      <rect x="524" y="372" width="310" height="54" rx="10" fill="#eef7f2"/>
-      <rect x="524" y="446" width="310" height="54" rx="10" fill="#f8f5ee"/>
-      <rect x="524" y="520" width="310" height="54" rx="10" fill="#f8f5ee"/>
-      <circle cx="1100" cy="490" r="48" fill="none" stroke="#c47a36" stroke-width="8"/>
-      <circle cx="1100" cy="490" r="10" fill="#c47a36"/>
-      <rect x="1002" y="566" width="206" height="38" rx="10" fill="#223d35"/>
-      <text x="1030" y="591" fill="#fffdf8" font-family="Segoe UI, Arial" font-size="16" font-weight="700">Visible target</text>
-      <rect x="104" y="756" width="1232" height="34" rx="12" fill="#ebe5d9"/>
+      <rect width="1440" height="900" fill="#11130f"/>
+      <rect x="56" y="52" width="1328" height="796" rx="24" fill="#f8f5ee"/>
+      <rect x="88" y="92" width="1264" height="58" rx="14" fill="#1f3c34"/>
+      <text x="116" y="128" fill="#fffdf8" font-family="Segoe UI, Arial" font-size="24" font-weight="700">${escapeXml(title)}</text>
+      <text x="1044" y="128" fill="#dce7e1" font-family="Segoe UI, Arial" font-size="17" font-weight="700">observe -> decide -> guide -> verify</text>
+      <text x="88" y="198" fill="#3c3830" font-family="Segoe UI, Arial" font-size="24" font-weight="700">${escapeXml(subtitle)}</text>
+      <text x="88" y="230" fill="#6f665b" font-family="Segoe UI, Arial" font-size="16">Synthetic demo workspace for public screenshots. No real screen content.</text>
+      <rect x="88" y="264" width="1264" height="2" fill="#ded8cd"/>
+
+      <rect x="88" y="304" width="370" height="460" rx="16" fill="${isDocs ? "#fffaf0" : "#eef4f1"}" stroke="#d6d0c5"/>
+      <rect x="488" y="304" width="448" height="460" rx="16" fill="#fffdf8" stroke="#d6d0c5"/>
+      <rect x="966" y="304" width="386" height="460" rx="16" fill="${isEditor ? "#f0f4fb" : "#fff8eb"}" stroke="#dfc596"/>
+
+      <text x="118" y="348" fill="#203b33" font-family="Segoe UI, Arial" font-size="18" font-weight="700">${isDocs ? "Docs Context" : "Editor Context"}</text>
+      <text x="518" y="348" fill="#203b33" font-family="Segoe UI, Arial" font-size="18" font-weight="700">Plan Board</text>
+      <text x="996" y="348" fill="#9b541a" font-family="Segoe UI, Arial" font-size="18" font-weight="700">Mouse Plan</text>
+
+      <rect x="118" y="378" width="310" height="36" rx="8" fill="#17221d"/>
+      <circle cx="142" cy="396" r="5" fill="#5ba785"/>
+      <circle cx="160" cy="396" r="5" fill="#d5a15b"/>
+      <circle cx="178" cy="396" r="5" fill="#b24a42"/>
+      <text x="202" y="402" fill="#dbe5df" font-family="Consolas, monospace" font-size="14">${isDocs ? "docs.openai.local" : "src/main/taskSessionManager.ts"}</text>
+      ${codeRows(118, 442, isDocs ? ["Computer use guide", "Screen sharing is observe-only", "Browser actions require approval", "Use screenshots to verify state", "Keep credentials out of logs"] : ["const observation = await screen.observe();", "plan.step('decide', context);", "mouse.preview(target, risk);", "if (risk.high) await approve();", "timeline.add('verified');"])}
+
+      <rect x="518" y="384" width="366" height="58" rx="10" fill="#eef7f2"/>
+      <text x="540" y="419" fill="#203b33" font-family="Segoe UI, Arial" font-size="16" font-weight="700">1. Read visible context</text>
+      <rect x="518" y="464" width="366" height="58" rx="10" fill="#fff8ed"/>
+      <text x="540" y="499" fill="#7d4b18" font-family="Segoe UI, Arial" font-size="16" font-weight="700">2. Choose next safe move</text>
+      <rect x="518" y="544" width="366" height="58" rx="10" fill="#fffdf8" stroke="#e2dccf"/>
+      <text x="540" y="579" fill="#3c3830" font-family="Segoe UI, Arial" font-size="16" font-weight="700">3. Guide or approve action</text>
+      <rect x="518" y="624" width="366" height="58" rx="10" fill="#fffdf8" stroke="#e2dccf"/>
+      <text x="540" y="659" fill="#3c3830" font-family="Segoe UI, Arial" font-size="16" font-weight="700">4. Verify result</text>
+
+      <path d="M1048 574 C1088 520, 1138 520, 1184 474 S1272 414, 1302 386" fill="none" stroke="#c47a36" stroke-width="8" stroke-linecap="round" opacity="0.42"/>
+      <circle cx="1184" cy="474" r="54" fill="none" stroke="#c47a36" stroke-width="8"/>
+      <circle cx="1184" cy="474" r="11" fill="#c47a36"/>
+      <rect x="1078" y="552" width="214" height="42" rx="10" fill="#203b33"/>
+      <text x="1116" y="579" fill="#fffdf8" font-family="Segoe UI, Arial" font-size="16" font-weight="700">Visible target</text>
+      <rect x="996" y="640" width="310" height="64" rx="12" fill="#fffdf8" stroke="#ebd3aa"/>
+      <text x="1020" y="670" fill="#3c3830" font-family="Segoe UI, Arial" font-size="15" font-weight="700">${isEditor ? "Ask user before running command" : "Review before external action"}</text>
+      <text x="1020" y="694" fill="#756b5f" font-family="Segoe UI, Arial" font-size="13">High-risk steps pause for approval.</text>
+
+      <rect x="88" y="798" width="1264" height="22" rx="11" fill="#ebe5d9"/>
     </svg>
   `);
 }
@@ -193,6 +215,17 @@ function createMiniScreenshot(name: string, index: number): string {
       <text x="42" y="160" fill="#3e3932" font-family="Segoe UI, Arial" font-size="16" font-weight="700">${escapeXml(name)}</text>
     </svg>
   `);
+}
+
+function codeRows(x: number, y: number, rows: string[]): string {
+  return rows.map((row, index) => {
+    const yy = y + index * 42;
+    const width = Math.max(140, Math.min(300, row.length * 8));
+    return `
+      <rect x="${x}" y="${yy - 20}" width="${width}" height="14" rx="7" fill="${index % 2 === 0 ? "#89a49b" : "#c6d1cc"}"/>
+      <text x="${x}" y="${yy}" fill="#514a41" font-family="Consolas, monospace" font-size="14">${escapeXml(row)}</text>
+    `;
+  }).join("");
 }
 
 function svgDataUri(svg: string): string {
