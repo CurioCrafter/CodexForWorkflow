@@ -34,7 +34,7 @@ jobs:
 
       - name: Upload renderer smoke screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: renderer-smoke-${{ github.sha }}
           path: tmp/renderer-smoke/*.png
@@ -64,7 +64,7 @@ jobs:
         run: npm run package:win
 
       - name: Upload packaged app
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: CodexForWorkflow-Windows-${{ github.sha }}
           path: |
